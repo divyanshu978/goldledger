@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: goldledger-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: goldledger
+      POSTGRES_USER: goldledger
+      POSTGRES_PASSWORD: goldledger_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - goldledger-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goldledger -d goldledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  goldledger-postgres-data:

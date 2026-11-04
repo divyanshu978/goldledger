@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ISSUE_CLERK
+  FINANCE_HEAD
+}
+
+enum JobStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  ISSUE
+  RECEIPT
+}
+
+model User {
+  id                  String            @id @default(uuid()) @db.Uuid
+  name                String            @db.VarChar(120)
+  email               String            @unique @db.VarChar(255)
+  passwordHash        String            @db.VarChar(255)
+  role                UserRole
+  isActive            Boolean           @default(true)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdTransactions GoldTransaction[] @relation("TransactionCreatedBy")
+  auditLogs           AuditLog[]
+}
+
+model Karigar {
+  id               String            @id @default(uuid()) @db.Uuid
+  karigarCode      String            @unique @db.VarChar(32)
+  name             String            @db.VarChar(120)
+  phone            String            @db.VarChar(30)
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  wastageRules     WastageRule[]
+  jobs             Job[]
+  goldTransactions GoldTransaction[]
+}
+
+model WastageRule {
+  id                    String   @id @default(uuid()) @db.Uuid
+  karigarId             String   @db.Uuid
+  itemCategory          String   @db.VarChar(80)
+  allowedWastagePercent Decimal  @db.Decimal(6, 3)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  karigar               Karigar  @relation(fields: [karigarId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([karigarId, itemCategory])
+}
+
+model Job {
+  id           String            @id @default(uuid()) @db.Uuid
+  jobNumber    String            @unique @db.VarChar(64)
+  karigarId    String            @db.Uuid
+  itemCategory String            @db.VarChar(80)
+  status       JobStatus         @default(OPEN)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  karigar      Karigar           @relation(fields: [karigarId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  transactions GoldTransaction[]
+}
+
+model GoldTransaction {
+  id              String          @id @default(uuid()) @db.Uuid
+  transactionId   String          @unique @db.VarChar(64)
+  transactionType TransactionType
+  jobId           String          @db.Uuid
+  karigarId       String          @db.Uuid
+  grossWeight     Decimal         @db.Decimal(12, 3)
+  purity          Decimal         @db.Decimal(5, 2)
+  fineWeight      Decimal         @db.Decimal(12, 3)
+  createdById     String          @db.Uuid
+  createdAt       DateTime        @default(now())
+  job             Job             @relation(fields: [jobId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  karigar         Karigar         @relation(fields: [karigarId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdBy       User            @relation("TransactionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  action     String   @db.VarChar(80)
+  entityType String   @db.VarChar(80)
+  entityId   String   @db.VarChar(64)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+}
