@@ -3,25 +3,25 @@ const bcrypt = require("bcrypt");
 const { prisma, pool } = require("../src/lib/prisma");
 
 async function main() {
-  const passwordHash = await bcrypt.hash("Day1DemoPassword!", 12);
+  const passwordHash = await bcrypt.hash("Demo123!", 12);
 
   const clerk = await prisma.user.upsert({
-    where: { email: "clerk@goldledger.local" },
+    where: { email: "clerk@goldledger.demo" },
     update: {},
     create: {
       name: "Issue Clerk",
-      email: "clerk@goldledger.local",
+      email: "clerk@goldledger.demo",
       passwordHash,
       role: "ISSUE_CLERK",
     },
   });
 
   const financeHead = await prisma.user.upsert({
-    where: { email: "finance@goldledger.local" },
+    where: { email: "finance@goldledger.demo" },
     update: {},
     create: {
       name: "Finance Head",
-      email: "finance@goldledger.local",
+      email: "finance@goldledger.demo",
       passwordHash,
       role: "FINANCE_HEAD",
     },

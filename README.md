@@ -127,6 +127,57 @@ To stop the container and delete the local database volume:
 docker compose down -v
 ```
 
+## Authentication
+
+The API uses JWTs in the `goldledger_token` cookie. The cookie is HttpOnly,
+so frontend JavaScript cannot read it. In development it uses `SameSite=Lax`;
+in production it is `Secure` and `SameSite=None` for a separately hosted
+frontend and API. It expires after eight hours.
+
+Test login with the seeded issue clerk:
+
+```powershell
+$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+Invoke-WebRequest `
+  -Uri http://localhost:4000/api/auth/login `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body '{"email":"clerk@goldledger.demo","password":"Demo123!"}' `
+  -WebSession $session
+
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/auth/me `
+  -WebSession $session
+```
+
+The finance head account is:
+
+```text
+Email: finance@goldledger.demo
+Password: Demo123!
+```
+
+Logout with the same session:
+
+```powershell
+Invoke-WebRequest `
+  -Uri http://localhost:4000/api/auth/logout `
+  -Method Post `
+  -WebSession $session
+```
+
+The frontend must send cookies on API requests:
+
+```javascript
+fetch("http://localhost:4000/api/auth/me", {
+  credentials: "include",
+});
+```
+
+Protected backend routes should use `requireAuth`. Finance-only routes should
+add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
+cannot be bypassed by changing a frontend URL.
+
 ## Development notes
 
 - Backend code remains JavaScript as required.
