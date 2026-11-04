@@ -88,6 +88,13 @@ the server directory:
 Copy-Item .env.example server\.env
 ```
 
+For the frontend, optionally create `client/.env.local` when the API is not
+running at `http://localhost:4000`:
+
+```powershell
+Copy-Item client\.env.example client\.env.local
+```
+
 Run the initial migration, generate the Prisma client, and seed the database:
 
 ```powershell
