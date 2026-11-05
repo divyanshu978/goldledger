@@ -7,6 +7,7 @@ const env = require("../config/env");
 const { prisma } = require("../lib/prisma");
 const {
   AUTH_COOKIE_NAME,
+  isDatabaseUnavailable,
   requireAuth,
 } = require("../middleware/auth.middleware");
 
@@ -46,9 +47,20 @@ router.post("/login", async (request, response) => {
     });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: parsed.data.email.toLowerCase() },
-  });
+  let user;
+  try {
+    user = await prisma.user.findUnique({
+      where: { email: parsed.data.email.toLowerCase() },
+    });
+  } catch (error) {
+    console.error("Login lookup failed:", error);
+    if (isDatabaseUnavailable(error)) {
+      return response.status(503).json({
+        error: "Authentication service is unavailable",
+      });
+    }
+    throw error;
+  }
 
   if (!user || !user.isActive) {
     return response.status(401).json({ error: "Invalid credentials" });

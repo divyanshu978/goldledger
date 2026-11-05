@@ -112,7 +112,7 @@ npm run db:deploy
 
 The seed creates two demo users, Murugesan, a necklace wastage rule, one job,
 and the sample issue transaction. Both demo users use the local-only password
-`Day1DemoPassword!`; change it before using the application beyond development.
+`Demo123!`; change it before using the application beyond development.
 
 To inspect the database locally:
 

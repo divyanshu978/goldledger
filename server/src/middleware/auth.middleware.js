@@ -5,6 +5,13 @@ const env = require("../config/env");
 
 const AUTH_COOKIE_NAME = "goldledger_token";
 
+function isDatabaseUnavailable(error) {
+  return error && (
+    error.code === "ECONNREFUSED" ||
+    error.cause?.code === "ECONNREFUSED"
+  );
+}
+
 function getTokenFromRequest(request) {
   const header = request.get("authorization");
   if (header && header.startsWith("Bearer ")) {
@@ -63,6 +70,11 @@ async function requireAuth(request, response, next) {
     if (error.name !== "JsonWebTokenError" && error.name !== "TokenExpiredError") {
       console.error("Authentication lookup failed:", error);
     }
+    if (isDatabaseUnavailable(error)) {
+      return response.status(503).json({
+        error: "Authentication service is unavailable",
+      });
+    }
     return response.status(401).json({ error: "Invalid authentication token" });
   }
 }
@@ -83,6 +95,7 @@ function requireRole(...allowedRoles) {
 
 module.exports = {
   AUTH_COOKIE_NAME,
+  isDatabaseUnavailable,
   requireAuth,
   requireRole,
 };

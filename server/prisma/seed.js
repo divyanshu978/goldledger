@@ -4,6 +4,8 @@ const { prisma, pool } = require("../src/lib/prisma");
 
 async function main() {
   const passwordHash = await bcrypt.hash("Demo123!", 12);
+  const testClerkPasswordHash = await bcrypt.hash("ClerkPassword123!", 12);
+  const testFinancePasswordHash = await bcrypt.hash("FinancePassword123!", 12);
 
   const clerk = await prisma.user.upsert({
     where: { email: "clerk@goldledger.demo" },
@@ -23,6 +25,36 @@ async function main() {
       name: "Finance Head",
       email: "finance@goldledger.demo",
       passwordHash,
+      role: "FINANCE_HEAD",
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "auth-clerk@goldledger.test" },
+    update: {
+      passwordHash: testClerkPasswordHash,
+      isActive: true,
+      role: "ISSUE_CLERK",
+    },
+    create: {
+      name: "Auth Test Clerk",
+      email: "auth-clerk@goldledger.test",
+      passwordHash: testClerkPasswordHash,
+      role: "ISSUE_CLERK",
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "auth-finance@goldledger.test" },
+    update: {
+      passwordHash: testFinancePasswordHash,
+      isActive: true,
+      role: "FINANCE_HEAD",
+    },
+    create: {
+      name: "Auth Test Finance",
+      email: "auth-finance@goldledger.test",
+      passwordHash: testFinancePasswordHash,
       role: "FINANCE_HEAD",
     },
   });
@@ -77,7 +109,7 @@ async function main() {
     },
   });
 
-  console.log(`Seeded users, karigar ${karigar.karigarCode}, and job ${job.jobNumber}.`);
+  console.log(`Seeded demo and auth test users, karigar ${karigar.karigarCode}, and job ${job.jobNumber}.`);
   console.log(`Finance user: ${financeHead.email}`);
 }
 
