@@ -10,6 +10,35 @@ export type User = {
   updatedAt: string;
 };
 
+export type WastageRule = {
+  id?: string;
+  itemCategory: string;
+  allowedWastagePercent: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Karigar = {
+  id: string;
+  karigarCode: string;
+  name: string;
+  phone: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  wastageRules: WastageRule[];
+};
+
+export type KarigarInput = {
+  karigarCode: string;
+  name: string;
+  phone: string;
+  wastageRules: Array<{
+    itemCategory: string;
+    allowedWastagePercent: number;
+  }>;
+};
+
 type ApiError = Error & { status?: number };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -67,4 +96,45 @@ export function getCurrentUser() {
 
 export function logout() {
   return request<void>("/api/auth/logout", { method: "POST" });
+}
+
+export function getKarigars(params: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  isActive?: boolean | "all";
+} = {}) {
+  const query = new URLSearchParams({
+    page: String(params.page ?? 1),
+    pageSize: String(params.pageSize ?? 100),
+  });
+  if (params.search) query.set("search", params.search);
+  if (params.isActive !== undefined && params.isActive !== "all") {
+    query.set("isActive", String(params.isActive));
+  }
+  return request<{
+    items: Karigar[];
+    pagination: { page: number; pageSize: number; total: number; totalPages: number };
+  }>(`/api/karigars?${query.toString()}`);
+}
+
+export function createKarigar(data: KarigarInput) {
+  return request<{ karigar: Karigar }>("/api/karigars", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateKarigar(id: string, data: Partial<KarigarInput>) {
+  return request<{ karigar: Karigar }>(`/api/karigars/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateKarigarStatus(id: string, isActive: boolean) {
+  return request<{ karigar: Karigar }>(`/api/karigars/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ isActive }),
+  });
 }

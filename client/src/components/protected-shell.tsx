@@ -102,7 +102,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
               return link.disabled ? (
                 <div key={link.label} aria-disabled="true" className={className}>{content}</div>
               ) : (
-                <Link key={link.label} href={link.href} onClick={() => setSidebarOpen(false)} className={className}>{content}</Link>
+                <Link key={link.label} href={link.href ?? "/dashboard"} onClick={() => setSidebarOpen(false)} className={className}>{content}</Link>
               );
             })}
           </nav>
