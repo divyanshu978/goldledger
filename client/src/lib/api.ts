@@ -215,3 +215,34 @@ export function returnGold(data: GoldReturnInput) {
     body: JSON.stringify(data),
   });
 }
+
+export type KarigarLedger = {
+  karigar: {
+    id: string;
+    karigarCode: string;
+    name: string;
+    phone: string;
+    isActive: boolean;
+  };
+  summary: {
+    totalFineGoldIssued: string;
+    totalFineGoldReturned: string;
+    outstandingFineGold: string;
+  };
+  transactions: Array<{
+    id: string;
+    transactionId: string;
+    date: string;
+    type: "ISSUE" | "RECEIPT";
+    returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS" | null;
+    grossWeight: string;
+    purity: string;
+    fineGold: string;
+    notes: string | null;
+    job: { id: string; jobNumber: string; category: string };
+  }>;
+};
+
+export function getKarigarLedger(id: string) {
+  return request<KarigarLedger>(`/api/karigars/${id}/ledger`);
+}

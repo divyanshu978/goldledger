@@ -7,6 +7,7 @@ const healthRouter = require("./routes/health.routes");
 const karigarRouter = require("./routes/karigar.routes");
 const goldIssueRouter = require("./routes/gold-issue.routes");
 const goldReturnRouter = require("./routes/gold-return.routes");
+const karigarLedgerRouter = require("./routes/karigar-ledger.routes");
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/karigars", karigarRouter);
 app.use("/api/gold-issues", goldIssueRouter);
 app.use("/api/gold-returns", goldReturnRouter);
+app.use("/api/karigars", karigarLedgerRouter);
 
 module.exports = app;

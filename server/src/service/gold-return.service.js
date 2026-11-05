@@ -72,7 +72,7 @@ async function listOutstandingJobs(prisma) {
 async function returnGold(prisma, { jobId, returnType, grossWeight, purity, notes, createdById }) {
   const calculation = calculateFineGold({ grossWeight, purity });
 
-  return prisma.$transaction(async (transaction) => {
+  const executeReturn = () => prisma.$transaction(async (transaction) => {
     const job = await transaction.job.findUnique({
       where: { id: jobId },
       include: {
@@ -141,6 +141,13 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
   });
+
+  try {
+    return await executeReturn();
+  } catch (error) {
+    if (error.code !== "P2034") throw error;
+    return executeReturn();
+  }
 }
 
 module.exports = {
