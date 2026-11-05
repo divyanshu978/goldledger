@@ -27,7 +27,7 @@ const links = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/karigars", label: "Karigars", icon: UsersRound },
   { href: "/gold-issue", label: "Gold Issue", icon: FileInput },
-  { label: "Gold Receipt", icon: PackageCheck, disabled: true },
+  { href: "/gold-return", label: "Gold Return", icon: PackageCheck },
   { label: "Karigar Ledger", icon: ClipboardList, disabled: true },
   { label: "Loss Alerts", icon: BellRing, disabled: true },
   { label: "Stock Statement", icon: Boxes, disabled: true },

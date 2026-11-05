@@ -200,6 +200,23 @@ minus issue fine weight, and creates the job and issue transaction in a
 serializable Prisma transaction. `fineGoldWeight` is never accepted from the
 client.
 
+Return gold against an open or partially returned job:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/gold-returns `
+  -Method Post `
+  -WebSession $session `
+  -ContentType "application/json" `
+  -Body '{"jobId":"<job-id>","returnType":"FINISHED_JEWELLERY","grossWeight":"110.000","purity":"91.60","notes":"Demo return"}'
+```
+
+Outstanding jobs can be loaded from
+`GET /api/gold-returns/jobs`. Return types are `FINISHED_JEWELLERY`, `SCRAP`,
+and `FILINGS`. The API calculates the return fine gold server-side, rejects
+returns above the outstanding job balance, stores a separate receipt
+transaction, and marks the job `PARTIALLY_RETURNED` or `COMPLETED`.
+
 Protected backend routes should use `requireAuth`. Finance-only routes should
 add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
 cannot be bypassed by changing a frontend URL.

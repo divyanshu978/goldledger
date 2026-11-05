@@ -13,6 +13,7 @@ enum UserRole {
 
 enum JobStatus {
   OPEN
+  PARTIALLY_RETURNED
   COMPLETED
   CANCELLED
 }
@@ -20,6 +21,12 @@ enum JobStatus {
 enum TransactionType {
   ISSUE
   RECEIPT
+}
+
+enum ReturnType {
+  FINISHED_JEWELLERY
+  SCRAP
+  FILINGS
 }
 
 model User {
@@ -84,6 +91,8 @@ model GoldTransaction {
   purity          Decimal         @db.Decimal(5, 2)
   fineWeight      Decimal         @db.Decimal(12, 3)
   createdById     String          @db.Uuid
+  returnType      ReturnType?
+  notes           String?         @db.VarChar(500)
   createdAt       DateTime        @default(now())
   job             Job             @relation(fields: [jobId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   karigar         Karigar         @relation(fields: [karigarId], references: [id], onDelete: Restrict, onUpdate: Cascade)

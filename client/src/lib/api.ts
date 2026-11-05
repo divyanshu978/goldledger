@@ -174,3 +174,44 @@ export function issueGold(data: GoldIssueInput) {
     body: JSON.stringify(data),
   });
 }
+
+export type OutstandingJob = {
+  id: string;
+  jobNumber: string;
+  category: string;
+  dueDate: string;
+  status: string;
+  karigar: { id: string; code: string; name: string };
+  issuedFineGold: string;
+  returnedFineGold: string;
+  outstandingFineGold: string;
+};
+
+export type GoldReturnInput = {
+  jobId: string;
+  returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS";
+  grossWeight: string;
+  purity: string;
+  notes?: string;
+};
+
+export function getOutstandingJobs() {
+  return request<{ jobs: OutstandingJob[] }>("/api/gold-returns/jobs");
+}
+
+export function returnGold(data: GoldReturnInput) {
+  return request<{
+    job: OutstandingJob;
+    transaction: {
+      transactionId: string;
+      returnType: GoldReturnInput["returnType"];
+      grossWeight: string;
+      purity: string;
+      fineWeight: string;
+      notes: string | null;
+    };
+  }>("/api/gold-returns", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
