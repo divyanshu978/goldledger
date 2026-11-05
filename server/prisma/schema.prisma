@@ -65,6 +65,8 @@ model Job {
   jobNumber    String            @unique @db.VarChar(64)
   karigarId    String            @db.Uuid
   itemCategory String            @db.VarChar(80)
+  dueDate      DateTime          @db.Date
+  notes        String?           @db.VarChar(500)
   status       JobStatus         @default(OPEN)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt

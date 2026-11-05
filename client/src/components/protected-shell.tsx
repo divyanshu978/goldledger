@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/karigars", label: "Karigars", icon: UsersRound },
-  { label: "Gold Issue", icon: FileInput, disabled: true },
+  { href: "/gold-issue", label: "Gold Issue", icon: FileInput },
   { label: "Gold Receipt", icon: PackageCheck, disabled: true },
   { label: "Karigar Ledger", icon: ClipboardList, disabled: true },
   { label: "Loss Alerts", icon: BellRing, disabled: true },

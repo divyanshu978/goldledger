@@ -5,6 +5,7 @@ const env = require("./config/env");
 const authRouter = require("./routes/auth.routes");
 const healthRouter = require("./routes/health.routes");
 const karigarRouter = require("./routes/karigar.routes");
+const goldIssueRouter = require("./routes/gold-issue.routes");
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.use(express.json());
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/karigars", karigarRouter);
+app.use("/api/gold-issues", goldIssueRouter);
 
 module.exports = app;

@@ -157,11 +157,16 @@ async function main() {
 
   const job = await prisma.job.upsert({
     where: { jobNumber: "JOB-001" },
-    update: {},
+    update: {
+      dueDate: new Date("2026-11-30T00:00:00.000Z"),
+      notes: "Seeded demo issue job.",
+    },
     create: {
       jobNumber: "JOB-001",
       karigarId: karigar.id,
       itemCategory: "NECKLACE",
+      dueDate: new Date("2026-11-30T00:00:00.000Z"),
+      notes: "Seeded demo issue job.",
     },
   });
 
@@ -177,6 +182,36 @@ async function main() {
       purity: "91.60",
       fineWeight: "109.920",
       createdById: clerk.id,
+    },
+  });
+
+  const openingJob = await prisma.job.upsert({
+    where: { jobNumber: "JOB-OPENING-STOCK" },
+    update: {
+      dueDate: new Date("2026-11-05T00:00:00.000Z"),
+      notes: "Development-only opening vault stock.",
+    },
+    create: {
+      jobNumber: "JOB-OPENING-STOCK",
+      karigarId: karigar.id,
+      itemCategory: "OPENING_STOCK",
+      dueDate: new Date("2026-11-05T00:00:00.000Z"),
+      notes: "Development-only opening vault stock.",
+    },
+  });
+
+  await prisma.goldTransaction.upsert({
+    where: { transactionId: "TX-OPENING-STOCK" },
+    update: {},
+    create: {
+      transactionId: "TX-OPENING-STOCK",
+      transactionType: "RECEIPT",
+      jobId: openingJob.id,
+      karigarId: karigar.id,
+      grossWeight: "500.000",
+      purity: "100.00",
+      fineWeight: "500.000",
+      createdById: financeHead.id,
     },
   });
 

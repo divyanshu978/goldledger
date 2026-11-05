@@ -184,6 +184,22 @@ fetch("http://localhost:4000/api/auth/me", {
 });
 ```
 
+Issue gold through the authenticated issue workflow:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/gold-issues `
+  -Method Post `
+  -WebSession $session `
+  -ContentType "application/json" `
+  -Body '{"karigarId":"<karigar-id>","grossWeight":"120.000","purity":"91.60","category":"NECKLACE","dueDate":"2026-12-15","notes":"Demo issue"}'
+```
+
+The API calculates fine gold server-side, checks vault stock using receipt
+minus issue fine weight, and creates the job and issue transaction in a
+serializable Prisma transaction. `fineGoldWeight` is never accepted from the
+client.
+
 Protected backend routes should use `requireAuth`. Finance-only routes should
 add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
 cannot be bypassed by changing a frontend URL.

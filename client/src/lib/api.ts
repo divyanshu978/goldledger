@@ -138,3 +138,39 @@ export function updateKarigarStatus(id: string, isActive: boolean) {
     body: JSON.stringify({ isActive }),
   });
 }
+
+export type GoldIssueInput = {
+  karigarId: string;
+  grossWeight: string;
+  purity: string;
+  category: string;
+  dueDate: string;
+  notes?: string;
+};
+
+export function issueGold(data: GoldIssueInput) {
+  return request<{
+    job: {
+      id: string;
+      jobNumber: string;
+      category: string;
+      dueDate: string;
+      notes: string | null;
+      status: string;
+    };
+    transaction: {
+      id: string;
+      transactionId: string;
+      transactionType: string;
+      grossWeight: string;
+      purity: string;
+      fineWeight: string;
+      createdById: string;
+      createdAt: string;
+    };
+    availableVaultStock: string;
+  }>("/api/gold-issues", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
