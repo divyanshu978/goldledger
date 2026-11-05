@@ -110,9 +110,12 @@ For an existing database or deployment, apply committed migrations with:
 npm run db:deploy
 ```
 
-The seed creates two demo users, Murugesan, a necklace wastage rule, one job,
-and the sample issue transaction. Both demo users use the local-only password
-`Demo123!`; change it before using the application beyond development.
+The seed creates two demo users, five fictional karigars, demo wastage
+assumptions for necklace, ring, chain, and bracelet work, one job, and the
+sample issue transaction. Both demo users use the local-only password
+`Demo123!`; change it before using the application beyond development. Running
+the seed again updates these development records without resetting the
+database.
 
 To inspect the database locally:
 

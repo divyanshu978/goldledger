@@ -59,30 +59,101 @@ async function main() {
     },
   });
 
-  const karigar = await prisma.karigar.upsert({
-    where: { karigarCode: "KAR-001" },
-    update: {},
-    create: {
+  const karigarSeeds = [
+    {
       karigarCode: "KAR-001",
-      name: "Murugesan",
+      name: "Murugesan S",
       phone: "9000000001",
-    },
-  });
-
-  await prisma.wastageRule.upsert({
-    where: {
-      karigarId_itemCategory: {
-        karigarId: karigar.id,
-        itemCategory: "NECKLACE",
+      rules: {
+        Necklace: "3.000",
+        Ring: "1.500",
+        Chain: "2.250",
+        Bracelet: "2.000",
       },
     },
-    update: {},
-    create: {
-      karigarId: karigar.id,
-      itemCategory: "NECKLACE",
-      allowedWastagePercent: "3.000",
+    {
+      karigarCode: "KAR-002",
+      name: "Kumar R",
+      phone: "9000000002",
+      rules: {
+        Necklace: "2.750",
+        Ring: "1.250",
+        Chain: "2.000",
+        Bracelet: "1.750",
+      },
     },
-  });
+    {
+      karigarCode: "KAR-003",
+      name: "Selvam P",
+      phone: "9000000003",
+      rules: {
+        Necklace: "3.250",
+        Ring: "1.750",
+        Chain: "2.500",
+        Bracelet: "2.250",
+      },
+    },
+    {
+      karigarCode: "KAR-004",
+      name: "Ravi K",
+      phone: "9000000004",
+      rules: {
+        Necklace: "2.500",
+        Ring: "1.000",
+        Chain: "1.750",
+        Bracelet: "1.500",
+      },
+    },
+    {
+      karigarCode: "KAR-005",
+      name: "Mani S",
+      phone: "9000000005",
+      rules: {
+        Necklace: "3.500",
+        Ring: "2.000",
+        Chain: "2.750",
+        Bracelet: "2.500",
+      },
+    },
+  ];
+
+  const karigars = [];
+  for (const seed of karigarSeeds) {
+    const karigar = await prisma.karigar.upsert({
+      where: { karigarCode: seed.karigarCode },
+      update: {
+        name: seed.name,
+        phone: seed.phone,
+        isActive: true,
+      },
+      create: {
+        karigarCode: seed.karigarCode,
+        name: seed.name,
+        phone: seed.phone,
+      },
+    });
+
+    karigars.push(karigar);
+
+    for (const [itemCategory, allowedWastagePercent] of Object.entries(seed.rules)) {
+      await prisma.wastageRule.upsert({
+        where: {
+          karigarId_itemCategory: {
+            karigarId: karigar.id,
+            itemCategory,
+          },
+        },
+        update: { allowedWastagePercent },
+        create: {
+          karigarId: karigar.id,
+          itemCategory,
+          allowedWastagePercent,
+        },
+      });
+    }
+  }
+
+  const karigar = karigars[0];
 
   const job = await prisma.job.upsert({
     where: { jobNumber: "JOB-001" },
@@ -109,7 +180,7 @@ async function main() {
     },
   });
 
-  console.log(`Seeded demo and auth test users, karigar ${karigar.karigarCode}, and job ${job.jobNumber}.`);
+  console.log(`Seeded demo and auth test users, ${karigars.length} karigars, and job ${job.jobNumber}.`);
   console.log(`Finance user: ${financeHead.email}`);
 }
 
