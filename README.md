@@ -185,6 +185,74 @@ Protected backend routes should use `requireAuth`. Finance-only routes should
 add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
 cannot be bypassed by changing a frontend URL.
 
+## Karigar Master API
+
+All Karigar endpoints require the authenticated `goldledger_token` cookie or a
+Bearer token.
+
+Create a karigar with category-specific wastage rules:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/karigars `
+  -Method Post `
+  -WebSession $session `
+  -ContentType "application/json" `
+  -Body '{"karigarCode":"KAR-002","name":"Ravi Kumar","phone":"9000000002","wastageRules":[{"itemCategory":"NECKLACE","allowedWastagePercent":3},{"itemCategory":"RING","allowedWastagePercent":1.5}]}'
+```
+
+Response:
+
+```json
+{
+  "karigar": {
+    "id": "uuid",
+    "karigarCode": "KAR-002",
+    "name": "Ravi Kumar",
+    "phone": "9000000002",
+    "isActive": true,
+    "wastageRules": [
+      { "id": "uuid", "itemCategory": "NECKLACE", "allowedWastagePercent": "3" },
+      { "id": "uuid", "itemCategory": "RING", "allowedWastagePercent": "1.5" }
+    ]
+  }
+}
+```
+
+List, search, and filter with `page`, `pageSize`, `search`, and
+`isActive=true|false` query parameters:
+
+```powershell
+Invoke-RestMethod `
+  -Uri "http://localhost:4000/api/karigars?search=Ravi&page=1&pageSize=20&isActive=true" `
+  -WebSession $session
+```
+
+The list response contains `items` with their `wastageRules` and a
+`pagination` object containing `page`, `pageSize`, `total`, and `totalPages`.
+
+Update details and replace the complete wastage-rule set:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/karigars/<id> `
+  -Method Patch `
+  -WebSession $session `
+  -ContentType "application/json" `
+  -Body '{"name":"Ravi K.","wastageRules":[{"itemCategory":"RING","allowedWastagePercent":2}]}'
+```
+
+Update status without deleting the karigar:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/karigars/<id>/status `
+  -Method Patch `
+  -WebSession $session `
+  -ContentType "application/json" `
+  -Body '{"isActive":false}'
+```
+
 ## Development notes
 
 - Backend code remains JavaScript as required.
