@@ -29,6 +29,12 @@ enum ReturnType {
   FILINGS
 }
 
+enum ReturnReviewStatus {
+  PENDING_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
 enum WastageReviewStatus {
   PROVISIONAL
   FINAL
@@ -50,6 +56,7 @@ model User {
   updatedAt           DateTime          @updatedAt
   createdTransactions GoldTransaction[] @relation("TransactionCreatedBy")
   auditLogs           AuditLog[]
+  reviewedReturns     ReturnReview[] @relation("ReturnReviewReviewer")
   submittedWastageReviews WastageReview[] @relation("WastageReviewSubmittedBy")
   approvedWastageReviews  WastageReview[] @relation("WastageReviewApprovedBy")
   resolvedWastageAlerts   WastageAlert[]  @relation("WastageAlertResolvedBy")
@@ -113,6 +120,20 @@ model GoldTransaction {
   job             Job             @relation(fields: [jobId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   karigar         Karigar         @relation(fields: [karigarId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   createdBy       User            @relation("TransactionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  returnReview    ReturnReview?
+}
+
+model ReturnReview {
+  id              String             @id @default(uuid()) @db.Uuid
+  transactionId   String             @unique @db.Uuid
+  status          ReturnReviewStatus @default(PENDING_REVIEW)
+  reviewerId      String?            @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?            @db.VarChar(500)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  transaction     GoldTransaction    @relation(fields: [transactionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewer        User?              @relation("ReturnReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 }
 
 model AuditLog {

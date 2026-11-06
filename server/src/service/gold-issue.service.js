@@ -20,16 +20,21 @@ function createTransactionId() {
 }
 
 async function getAvailableVaultStock(transaction) {
-  const totals = await transaction.goldTransaction.groupBy({
-    by: ["transactionType"],
-    _sum: { fineWeight: true },
+  const transactions = await transaction.goldTransaction.findMany({
+    select: {
+      transactionType: true,
+      fineWeight: true,
+      returnType: true,
+      returnReview: { select: { status: true } },
+    },
   });
 
-  return totals.reduce((available, total) => {
-    const weight = total._sum.fineWeight ?? new Prisma.Decimal(0);
-    return total.transactionType === "RECEIPT"
-      ? available.add(weight)
-      : available.sub(weight);
+  return transactions.reduce((available, current) => {
+    const isAcceptedReceipt = current.transactionType === "RECEIPT"
+      && (!current.returnType || current.returnReview?.status === "ACCEPTED");
+    return isAcceptedReceipt
+      ? available.add(current.fineWeight)
+      : current.transactionType === "ISSUE" ? available.sub(current.fineWeight) : available;
   }, new Prisma.Decimal(0));
 }
 

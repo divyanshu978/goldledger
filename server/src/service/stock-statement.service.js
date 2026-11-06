@@ -11,7 +11,11 @@ function sumFineWeight(transactions) {
 
 function classifyTransaction(transaction) {
   if (transaction.transactionType === "ISSUE") return "ISSUE";
-  if (transaction.returnType) return "ACCEPTED_RETURN";
+  if (transaction.returnType) {
+    return transaction.returnReview?.status === "ACCEPTED"
+      ? "ACCEPTED_RETURN"
+      : "PENDING_RETURN";
+  }
   if (transaction.job.jobNumber === OPENING_STOCK_JOB_NUMBER) return "OPENING_STOCK";
   return "RECEIPT";
 }
@@ -24,6 +28,7 @@ function serializeTransaction(transaction) {
     transactionType: transaction.transactionType,
     stockEvent: classifyTransaction(transaction),
     returnType: transaction.returnType,
+    reviewStatus: transaction.returnReview?.status ?? null,
     grossWeight: transaction.grossWeight.toFixed(3),
     purity: transaction.purity.toFixed(2),
     fineGoldWeight: transaction.fineWeight.toFixed(3),
@@ -42,6 +47,7 @@ async function getStockStatement(prisma) {
       job: {
         select: { id: true, jobNumber: true, itemCategory: true },
       },
+      returnReview: { select: { status: true } },
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });

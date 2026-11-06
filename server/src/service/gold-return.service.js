@@ -115,6 +115,9 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
         createdById,
       },
     });
+    const returnReview = await transaction.returnReview.create({
+      data: { transactionId: goldTransaction.id },
+    });
 
     const updatedJob = await transaction.job.update({
       where: { id: job.id },
@@ -144,6 +147,7 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
         fineWeight: goldTransaction.fineWeight.toFixed(3),
         notes: goldTransaction.notes,
         createdAt: goldTransaction.createdAt,
+        reviewStatus: returnReview.status,
       },
       wastage: wastageReview
         ? {
@@ -161,7 +165,7 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
   try {
     return await executeReturn();
   } catch (error) {
-    if (error.code !== "P2034") throw error;
+    if (error.code !== "P2034" && error.cause?.originalCode !== "40001") throw error;
     return executeReturn();
   }
 }

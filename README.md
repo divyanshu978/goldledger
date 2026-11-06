@@ -256,6 +256,23 @@ Finance heads can list reviews with
 completed jobs are finalized automatically. All values use the existing
 three-decimal `ROUND_HALF_UP` policy.
 
+## Finance Return Review
+
+Returns are created with `PENDING_REVIEW` status and do not increase vault
+stock until a finance head accepts them. Finance review endpoints are:
+
+```text
+GET   /api/finance-reviews
+PATCH /api/finance-reviews/:transactionId
+```
+
+Accept with `{"decision":"ACCEPTED"}` or reject with
+`{"decision":"REJECTED","rejectionReason":"..."}`. Rejection reasons are
+required, decisions are one-time operations, and each decision records the
+reviewer, timestamp, decision, and audit log entry. Rejected and pending
+returns remain in the original transaction history but are excluded from
+available vault stock.
+
 ## Karigar Master API
 
 All Karigar endpoints require the authenticated `goldledger_token` cookie or a

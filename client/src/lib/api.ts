@@ -262,7 +262,7 @@ export type StockStatement = {
     reference: string;
     date: string;
     transactionType: "ISSUE" | "RECEIPT";
-    stockEvent: "OPENING_STOCK" | "RECEIPT" | "ISSUE" | "ACCEPTED_RETURN";
+    stockEvent: "OPENING_STOCK" | "RECEIPT" | "ISSUE" | "ACCEPTED_RETURN" | "PENDING_RETURN";
     returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS" | null;
     grossWeight: string;
     purity: string;
@@ -329,4 +329,54 @@ export function submitWastageReview(jobId: string) {
 
 export function resolveWastageAlert(alertId: string) {
   return request(`/api/wastage-alerts/${alertId}/resolve`, { method: "PATCH" });
+}
+
+export type ReturnReviewItem = {
+  id: string;
+  status: "PENDING_REVIEW" | "ACCEPTED" | "REJECTED";
+  reviewerId: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  transaction: {
+    id: string;
+    transactionId: string;
+    returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS";
+    grossWeight: string;
+    purity: string;
+    fineGold: string;
+    notes: string | null;
+    createdAt: string;
+  };
+  job: {
+    id: string;
+    jobNumber: string;
+    category: string;
+    karigar: { id: string; code: string; name: string };
+  };
+  transactions: Array<{
+    id: string;
+    transactionId: string;
+    type: "ISSUE" | "RECEIPT";
+    returnType: string | null;
+    grossWeight: string;
+    purity: string;
+    fineGold: string;
+    notes: string | null;
+    date: string;
+  }>;
+};
+
+export function getPendingReturnReviews() {
+  return request<{ items: ReturnReviewItem[] }>("/api/finance-reviews");
+}
+
+export function decideReturnReview(
+  transactionId: string,
+  decision: "ACCEPTED" | "REJECTED",
+  rejectionReason?: string,
+) {
+  return request<{ review: ReturnReviewItem }>(`/api/finance-reviews/${transactionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ decision, rejectionReason }),
+  });
 }
