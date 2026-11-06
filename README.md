@@ -237,6 +237,25 @@ Protected backend routes should use `requireAuth`. Finance-only routes should
 add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
 cannot be bypassed by changing a frontend URL.
 
+## Wastage Review and Alerts
+
+Each issue snapshots the karigar's wastage rule onto the job. Wastage is
+calculated from fine gold only:
+
+```text
+actual difference = issued fine gold - returned fine gold
+allowed wastage = issued fine gold * applied percentage / 100
+excess wastage = max(0, actual difference - allowed wastage)
+```
+
+Finance heads can list reviews with
+`GET /api/wastage-alerts?status=pending|resolved|all`, inspect a job with
+`GET /api/wastage-alerts/:jobId`, submit a job for final finance review with
+`POST /api/wastage-alerts/:jobId/submit`, and resolve an alert with
+`PATCH /api/wastage-alerts/:alertId/resolve`. Open jobs are provisional;
+completed jobs are finalized automatically. All values use the existing
+three-decimal `ROUND_HALF_UP` policy.
+
 ## Karigar Master API
 
 All Karigar endpoints require the authenticated `goldledger_token` cookie or a

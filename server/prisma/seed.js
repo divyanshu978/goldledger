@@ -160,6 +160,7 @@ async function main() {
     update: {
       dueDate: new Date("2026-11-30T00:00:00.000Z"),
       notes: "Seeded demo issue job.",
+      appliedWastagePercent: "3.000",
     },
     create: {
       jobNumber: "JOB-001",
@@ -167,6 +168,7 @@ async function main() {
       itemCategory: "NECKLACE",
       dueDate: new Date("2026-11-30T00:00:00.000Z"),
       notes: "Seeded demo issue job.",
+      appliedWastagePercent: "3.000",
     },
   });
 
@@ -190,6 +192,7 @@ async function main() {
     update: {
       dueDate: new Date("2026-11-05T00:00:00.000Z"),
       notes: "Development-only opening vault stock.",
+      appliedWastagePercent: "0.000",
     },
     create: {
       jobNumber: "JOB-OPENING-STOCK",
@@ -197,6 +200,7 @@ async function main() {
       itemCategory: "OPENING_STOCK",
       dueDate: new Date("2026-11-05T00:00:00.000Z"),
       notes: "Development-only opening vault stock.",
+      appliedWastagePercent: "0.000",
     },
   });
 

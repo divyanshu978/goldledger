@@ -29,7 +29,7 @@ const links = [
   { href: "/gold-issue", label: "Gold Issue", icon: FileInput },
   { href: "/gold-return", label: "Gold Return", icon: PackageCheck },
   { label: "Karigar Ledger", icon: ClipboardList, disabled: true },
-  { label: "Loss Alerts", icon: BellRing, disabled: true },
+  { href: "/wastage-alerts", label: "Loss Alerts", icon: BellRing },
   { href: "/stock-statement", label: "Stock Statement", icon: Boxes },
 ];
 
@@ -91,7 +91,7 @@ function ShellContent({ children }: { children: React.ReactNode }) {
             </button>
           </div>
           <nav className="space-y-1">
-            {links.map((link) => {
+            {links.filter((link) => link.href !== "/wastage-alerts" || user?.role === "FINANCE_HEAD").map((link) => {
               const Icon = link.icon;
               const active = Boolean(link.href && (pathname === link.href || pathname.startsWith(`${link.href}/`)));
               const className = cn(

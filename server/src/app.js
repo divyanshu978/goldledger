@@ -9,6 +9,7 @@ const goldIssueRouter = require("./routes/gold-issue.routes");
 const goldReturnRouter = require("./routes/gold-return.routes");
 const karigarLedgerRouter = require("./routes/karigar-ledger.routes");
 const stockStatementRouter = require("./routes/stock-statement.routes");
+const wastageRouter = require("./routes/wastage.routes");
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use("/api/gold-issues", goldIssueRouter);
 app.use("/api/gold-returns", goldReturnRouter);
 app.use("/api/karigars", karigarLedgerRouter);
 app.use("/api/stock-statement", stockStatementRouter);
+app.use("/api/wastage-alerts", wastageRouter);
 
 module.exports = app;

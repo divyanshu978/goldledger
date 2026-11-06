@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const { Prisma } = require("@prisma/client");
 
 const { calculateFineGold } = require("./fine-gold.service");
+const { createWastageReview } = require("./wastage.service");
 
 class GoldReturnError extends Error {
   constructor(statusCode, message) {
@@ -124,6 +125,13 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
       },
     });
 
+    const wastageReview = await createWastageReview(
+      transaction,
+      updatedJob,
+      createdById,
+      updatedStatus === "COMPLETED" ? "COMPLETED" : "PROVISIONAL",
+    );
+
     return {
       job: serializeJob(updatedJob, remaining),
       transaction: {
@@ -137,6 +145,14 @@ async function returnGold(prisma, { jobId, returnType, grossWeight, purity, note
         notes: goldTransaction.notes,
         createdAt: goldTransaction.createdAt,
       },
+      wastage: wastageReview
+        ? {
+            actualDifference: wastageReview.calculation.actualDifference.toFixed(3),
+            allowedWastage: wastageReview.calculation.allowedWastage.toFixed(3),
+            excessWastage: wastageReview.calculation.excessWastage.toFixed(3),
+            status: updatedStatus === "COMPLETED" ? "FINAL" : "PROVISIONAL",
+          }
+        : null,
     };
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,

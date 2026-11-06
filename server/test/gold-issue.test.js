@@ -21,7 +21,10 @@ describe("gold issue API", () => {
     const existing = await prisma.karigar.findUnique({ where: { karigarCode } });
     if (existing) {
       await prisma.goldTransaction.deleteMany({ where: { karigarId: existing.id } });
+      await prisma.wastageAlert.deleteMany({ where: { job: { karigarId: existing.id } } });
+      await prisma.wastageReview.deleteMany({ where: { job: { karigarId: existing.id } } });
       await prisma.job.deleteMany({ where: { karigarId: existing.id } });
+      await prisma.wastageRule.deleteMany({ where: { karigarId: existing.id } });
       await prisma.karigar.delete({ where: { id: existing.id } });
     }
     karigar = await prisma.karigar.create({
@@ -29,6 +32,20 @@ describe("gold issue API", () => {
         karigarCode,
         name: "Issue Test Karigar",
         phone: "9000000091",
+      },
+    });
+    await prisma.wastageRule.create({
+      data: {
+        karigarId: karigar.id,
+        itemCategory: "NECKLACE",
+        allowedWastagePercent: "3.000",
+      },
+    });
+    await prisma.wastageRule.create({
+      data: {
+        karigarId: karigar.id,
+        itemCategory: "CHAIN",
+        allowedWastagePercent: "2.000",
       },
     });
     openingJob = await prisma.job.create({
@@ -56,7 +73,10 @@ describe("gold issue API", () => {
 
   after(async () => {
     await prisma.goldTransaction.deleteMany({ where: { karigarId: karigar.id } });
+    await prisma.wastageAlert.deleteMany({ where: { job: { karigarId: karigar.id } } });
+    await prisma.wastageReview.deleteMany({ where: { job: { karigarId: karigar.id } } });
     await prisma.job.deleteMany({ where: { karigarId: karigar.id } });
+    await prisma.wastageRule.deleteMany({ where: { karigarId: karigar.id } });
     await prisma.karigar.delete({ where: { id: karigar.id } });
     await prisma.$disconnect();
     await pool.end();

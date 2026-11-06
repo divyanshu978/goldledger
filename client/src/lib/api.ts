@@ -275,3 +275,58 @@ export type StockStatement = {
 export function getStockStatement() {
   return request<StockStatement>("/api/stock-statement");
 }
+
+export type WastageStatus = "PROVISIONAL" | "FINAL";
+
+export type WastageItem = {
+  job: {
+    id: string;
+    jobNumber: string;
+    category: string;
+    status: string;
+    dueDate: string;
+    appliedWastagePercent: string;
+    karigar: { id: string; code: string; name: string };
+  };
+  status: WastageStatus;
+  reviewEvent: string;
+  issuedFineGold: string;
+  returnedFineGold: string;
+  allowedWastage: string;
+  actualDifference: string;
+  excessWastage: string;
+  alert: {
+    id: string;
+    status: "PENDING" | "RESOLVED";
+    createdAt: string;
+    resolvedAt: string | null;
+  } | null;
+};
+
+export function getWastageAlerts(status: "all" | "pending" | "resolved" = "all") {
+  return request<{ items: WastageItem[] }>(`/api/wastage-alerts?status=${status}`);
+}
+
+export function getJobWastage(jobId: string) {
+  return request<WastageItem & {
+    transactions: Array<{
+      id: string;
+      transactionId: string;
+      type: "ISSUE" | "RECEIPT";
+      returnType: string | null;
+      grossWeight: string;
+      purity: string;
+      fineGold: string;
+      notes: string | null;
+      date: string;
+    }>;
+  }>(`/api/wastage-alerts/${jobId}`);
+}
+
+export function submitWastageReview(jobId: string) {
+  return request<WastageItem>(`/api/wastage-alerts/${jobId}/submit`, { method: "POST" });
+}
+
+export function resolveWastageAlert(alertId: string) {
+  return request(`/api/wastage-alerts/${alertId}/resolve`, { method: "PATCH" });
+}

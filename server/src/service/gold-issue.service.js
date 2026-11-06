@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const { Prisma } = require("@prisma/client");
 
 const { calculateFineGold } = require("./fine-gold.service");
+const { createWastageReview } = require("./wastage.service");
 
 class GoldIssueError extends Error {
   constructor(statusCode, message) {
@@ -35,10 +36,10 @@ async function getAvailableVaultStock(transaction) {
 async function issueGold(prisma, { karigarId, grossWeight, purity, category, dueDate, notes, createdById }) {
   const calculation = calculateFineGold({ grossWeight, purity });
 
-  return prisma.$transaction(async (transaction) => {
+  const executeIssue = () => prisma.$transaction(async (transaction) => {
     const karigar = await transaction.karigar.findUnique({
       where: { id: karigarId },
-      select: { id: true, isActive: true },
+      select: { id: true, isActive: true, karigarCode: true, name: true },
     });
 
     if (!karigar) {
@@ -46,6 +47,20 @@ async function issueGold(prisma, { karigarId, grossWeight, purity, category, due
     }
     if (!karigar.isActive) {
       throw new GoldIssueError(400, "Gold cannot be issued to an inactive karigar");
+    }
+
+    const wastageRule = await transaction.wastageRule.findFirst({
+      where: {
+        karigarId,
+        itemCategory: { equals: category, mode: "insensitive" },
+      },
+      select: { allowedWastagePercent: true },
+    });
+    if (!wastageRule) {
+      throw new GoldIssueError(
+        400,
+        `No wastage rule is configured for category ${category}`,
+      );
     }
 
     const availableStock = await getAvailableVaultStock(transaction);
@@ -64,6 +79,7 @@ async function issueGold(prisma, { karigarId, grossWeight, purity, category, due
         itemCategory: category,
         dueDate,
         notes: notes || null,
+        appliedWastagePercent: wastageRule.allowedWastagePercent,
       },
     });
 
@@ -80,6 +96,23 @@ async function issueGold(prisma, { karigarId, grossWeight, purity, category, due
       },
     });
 
+    await createWastageReview(
+      transaction,
+      {
+        ...job,
+        karigar: {
+          karigarCode: karigar.karigarCode,
+          name: karigar.name,
+        },
+        transactions: [{
+          transactionType: goldTransaction.transactionType,
+          fineWeight: goldTransaction.fineWeight,
+        }],
+      },
+      createdById,
+      "PROVISIONAL",
+    );
+
     return {
       job: {
         id: job.id,
@@ -88,6 +121,7 @@ async function issueGold(prisma, { karigarId, grossWeight, purity, category, due
         dueDate: job.dueDate,
         notes: job.notes,
         status: job.status,
+        appliedWastagePercent: job.appliedWastagePercent.toFixed(3),
       },
       transaction: {
         id: goldTransaction.id,
@@ -104,6 +138,13 @@ async function issueGold(prisma, { karigarId, grossWeight, purity, category, due
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
   });
+
+  try {
+    return await executeIssue();
+  } catch (error) {
+    if (error.code !== "P2034") throw error;
+    return executeIssue();
+  }
 }
 
 module.exports = {

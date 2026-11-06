@@ -46,6 +46,14 @@ async function createIssueJob(jobNumber, fineWeight) {
 
 describe("gold return API", () => {
   before(async () => {
+    const existing = await prisma.karigar.findUnique({ where: { karigarCode: "RETURN-TEST-001" } });
+    if (existing) {
+      await prisma.goldTransaction.deleteMany({ where: { karigarId: existing.id } });
+      await prisma.wastageAlert.deleteMany({ where: { job: { karigarId: existing.id } } });
+      await prisma.wastageReview.deleteMany({ where: { job: { karigarId: existing.id } } });
+      await prisma.job.deleteMany({ where: { karigarId: existing.id } });
+      await prisma.karigar.delete({ where: { id: existing.id } });
+    }
     karigar = await prisma.karigar.create({
       data: {
         karigarCode: "RETURN-TEST-001",
@@ -57,6 +65,8 @@ describe("gold return API", () => {
 
   after(async () => {
     await prisma.goldTransaction.deleteMany({ where: { karigarId: karigar.id } });
+    await prisma.wastageAlert.deleteMany({ where: { job: { karigarId: karigar.id } } });
+    await prisma.wastageReview.deleteMany({ where: { job: { karigarId: karigar.id } } });
     await prisma.job.deleteMany({ where: { karigarId: karigar.id } });
     await prisma.karigar.delete({ where: { id: karigar.id } });
     await prisma.$disconnect();
