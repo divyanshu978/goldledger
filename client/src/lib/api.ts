@@ -380,3 +380,27 @@ export function decideReturnReview(
     body: JSON.stringify({ decision, rejectionReason }),
   });
 }
+
+export type ImageReadingSuggestion = {
+  grossWeight: string;
+  purity: string;
+  unit: string;
+  visibleReading: string;
+  confidence: number | null;
+  uncertainty: string | null;
+};
+
+export async function extractImageReading(image: File) {
+  const formData = new FormData();
+  formData.append("image", image);
+  const response = await fetch(`${API_URL}/api/image-extractions`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? "Unable to extract a reading from the image.");
+  }
+  return response.json() as Promise<{ suggestion: ImageReadingSuggestion }>;
+}

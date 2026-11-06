@@ -11,6 +11,7 @@ const karigarLedgerRouter = require("./routes/karigar-ledger.routes");
 const stockStatementRouter = require("./routes/stock-statement.routes");
 const wastageRouter = require("./routes/wastage.routes");
 const returnReviewRouter = require("./routes/return-review.routes");
+const imageExtractionRouter = require("./routes/image-extraction.routes");
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use("/api/karigars", karigarLedgerRouter);
 app.use("/api/stock-statement", stockStatementRouter);
 app.use("/api/wastage-alerts", wastageRouter);
 app.use("/api/finance-reviews", returnReviewRouter);
+app.use("/api/image-extractions", imageExtractionRouter);
 
 module.exports = app;

@@ -273,6 +273,18 @@ reviewer, timestamp, decision, and audit log entry. Rejected and pending
 returns remain in the original transaction history but are excluded from
 available vault stock.
 
+## AI-Assisted Return Reading
+
+The return form can upload a scale photo to
+`POST /api/image-extractions` using a multipart `image` field. Only JPEG, PNG,
+and WebP files up to 5 MB are accepted; the server verifies the image signature
+and does not persist the upload. The configured vision provider returns
+weight/purity suggestions only. Configure the server with `VISION_API_KEY`,
+`VISION_API_URL`, and `VISION_MODEL`; the key is never sent to the frontend.
+The user must review, edit if needed, and explicitly confirm the suggestions
+before the existing return endpoint is submitted. AI never supplies fine gold
+or changes transactions and stock.
+
 ## Karigar Master API
 
 All Karigar endpoints require the authenticated `goldledger_token` cookie or a
