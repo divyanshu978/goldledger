@@ -217,6 +217,22 @@ and `FILINGS`. The API calculates the return fine gold server-side, rejects
 returns above the outstanding job balance, stores a separate receipt
 transaction, and marks the job `PARTIALLY_RETURNED` or `COMPLETED`.
 
+## Vault Stock Statement
+
+The finance head can retrieve the auditable current vault stock statement:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:4000/api/stock-statement `
+  -WebSession $session
+```
+
+The response includes opening stock, received stock, issued gold, accepted
+returns, adjustments, closing stock, outstanding gold with karigars, and the
+transaction history. All weights are fine-gold weights calculated by the
+backend using exact decimal arithmetic. The closing balance is never accepted
+from the frontend.
+
 Protected backend routes should use `requireAuth`. Finance-only routes should
 add `requireRole("FINANCE_HEAD")`; authorization is enforced by the API and
 cannot be bypassed by changing a frontend URL.

@@ -30,7 +30,7 @@ const links = [
   { href: "/gold-return", label: "Gold Return", icon: PackageCheck },
   { label: "Karigar Ledger", icon: ClipboardList, disabled: true },
   { label: "Loss Alerts", icon: BellRing, disabled: true },
-  { label: "Stock Statement", icon: Boxes, disabled: true },
+  { href: "/stock-statement", label: "Stock Statement", icon: Boxes },
 ];
 
 export function ProtectedShell({ children }: { children: React.ReactNode }) {

@@ -246,3 +246,32 @@ export type KarigarLedger = {
 export function getKarigarLedger(id: string) {
   return request<KarigarLedger>(`/api/karigars/${id}/ledger`);
 }
+
+export type StockStatement = {
+  summary: {
+    openingStock: string;
+    receivedStock: string;
+    issuedGold: string;
+    acceptedReturns: string;
+    adjustments: string;
+    closingStock: string;
+    outstandingWithKarigars: string;
+  };
+  transactions: Array<{
+    id: string;
+    reference: string;
+    date: string;
+    transactionType: "ISSUE" | "RECEIPT";
+    stockEvent: "OPENING_STOCK" | "RECEIPT" | "ISSUE" | "ACCEPTED_RETURN";
+    returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS" | null;
+    grossWeight: string;
+    purity: string;
+    fineGoldWeight: string;
+    notes: string | null;
+    job: { id: string; jobNumber: string; category: string };
+  }>;
+};
+
+export function getStockStatement() {
+  return request<StockStatement>("/api/stock-statement");
+}
