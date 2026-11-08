@@ -1,18 +1,16 @@
-const { Pool, neonConfig } = require("@neondatabase/serverless");
-const { PrismaNeon } = require("@prisma/adapter-neon");
+const { PrismaPg } = require("@prisma/adapter-pg");
 const { PrismaClient } = require("@prisma/client");
-const ws = require("ws");
+const { Pool } = require("pg");
 const env = require("../config/env");
 
-if (!env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required to initialize Prisma");
+const databaseUrl = env.DATABASE_URL || process.env.DIRECT_URL;
+
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL or DIRECT_URL is required to initialize Prisma");
 }
 
-// Enable WebSocket support for Neon serverless pool
-neonConfig.webSocketConstructor = ws;
-
-const pool = new Pool({ connectionString: env.DATABASE_URL });
-const adapter = new PrismaNeon(pool);
+const pool = new Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 module.exports = { prisma, pool };
