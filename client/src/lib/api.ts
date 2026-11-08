@@ -39,9 +39,13 @@ export type KarigarInput = {
   }>;
 };
 
+
+
 type ApiError = Error & { status?: number };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+).replace(/\/+$/, "");
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
