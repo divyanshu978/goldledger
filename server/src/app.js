@@ -12,6 +12,7 @@ const stockStatementRouter = require("./routes/stock-statement.routes");
 const wastageRouter = require("./routes/wastage.routes");
 const returnReviewRouter = require("./routes/return-review.routes");
 const imageExtractionRouter = require("./routes/image-extraction.routes");
+const dashboardRouter = require("./routes/dashboard.routes");
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use("/api/stock-statement", stockStatementRouter);
 app.use("/api/wastage-alerts", wastageRouter);
 app.use("/api/finance-reviews", returnReviewRouter);
 app.use("/api/image-extractions", imageExtractionRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 module.exports = app;

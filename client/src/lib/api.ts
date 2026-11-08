@@ -98,6 +98,36 @@ export function logout() {
   return request<void>("/api/auth/logout", { method: "POST" });
 }
 
+export type DashboardData = {
+  summary: {
+    goldInVault: string;
+    goldWithKarigars: string;
+    openJobs: number;
+    itemsNeedingReview: number;
+    pendingReturns: number;
+    pendingWastageAlerts: number;
+  };
+  transactions: Array<{
+    id: string;
+    reference: string;
+    date: string;
+    transactionType: "ISSUE" | "RECEIPT";
+    stockEvent: "OPENING_STOCK" | "RECEIPT" | "ISSUE" | "ACCEPTED_RETURN" | "PENDING_RETURN";
+    returnType: "FINISHED_JEWELLERY" | "SCRAP" | "FILINGS" | null;
+    reviewStatus: "PENDING_REVIEW" | "ACCEPTED" | "REJECTED" | null;
+    fineGold: string;
+    grossWeight: string;
+    purity: string;
+    notes: string | null;
+    job: { id: string; jobNumber: string; category: string };
+    karigar: { id: string; name: string; code: string };
+  }>;
+};
+
+export function getDashboard() {
+  return request<DashboardData>("/api/dashboard");
+}
+
 export function getKarigars(params: {
   page?: number;
   pageSize?: number;

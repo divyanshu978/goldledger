@@ -28,7 +28,6 @@ const links = [
   { href: "/karigars", label: "Karigars", icon: UsersRound },
   { href: "/gold-issue", label: "Gold Issue", icon: FileInput },
   { href: "/gold-return", label: "Gold Return", icon: PackageCheck },
-  { label: "Karigar Ledger", icon: ClipboardList, disabled: true },
   { href: "/wastage-alerts", label: "Loss Alerts", icon: BellRing },
   { href: "/finance-review", label: "Finance Review", icon: ClipboardList },
   { href: "/stock-statement", label: "Stock Statement", icon: Boxes },
@@ -97,14 +96,9 @@ function ShellContent({ children }: { children: React.ReactNode }) {
               const active = Boolean(link.href && (pathname === link.href || pathname.startsWith(`${link.href}/`)));
               const className = cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                active ? "bg-stone-950 text-white" : link.disabled ? "cursor-not-allowed text-stone-400" : "text-stone-600 hover:bg-stone-100 hover:text-stone-950",
+                active ? "bg-stone-950 text-white" : "text-stone-600 hover:bg-stone-100 hover:text-stone-950",
               );
-              const content = <><Icon size={18} /><span className={cn(sidebarCollapsed && "lg:hidden")}>{link.label}</span>{link.disabled ? <span className={cn("ml-auto text-[10px] font-medium uppercase tracking-wide text-stone-400", sidebarCollapsed && "lg:hidden")}>Soon</span> : null}</>;
-              return link.disabled ? (
-                <div key={link.label} aria-disabled="true" className={className}>{content}</div>
-              ) : (
-                <Link key={link.label} href={link.href ?? "/dashboard"} onClick={() => setSidebarOpen(false)} className={className}>{content}</Link>
-              );
+              return <Link key={link.label} href={link.href} onClick={() => setSidebarOpen(false)} className={className}><Icon size={18} /><span className={cn(sidebarCollapsed && "lg:hidden")}>{link.label}</span></Link>;
             })}
           </nav>
           {user?.role === "FINANCE_HEAD" && !sidebarCollapsed ? (
