@@ -154,11 +154,11 @@ The root [.env.example](./.env.example) is the source template. Copy it to
 | `PORT` | No | API port, defaults to `4000` |
 | `CLIENT_ORIGIN` | No | Allowed frontend origin, defaults to `http://localhost:3000` |
 | `NODE_ENV` | No | `development`, `test`, or `production` |
-| `VISION_API_KEY` | For image extraction | Server-side vision provider key |
-| `VISION_API_URL` | No | OpenAI-compatible vision endpoint |
-| `VISION_MODEL` | No | Vision model name |
+| `GEMINI_API_KEY` | For image extraction | Server-side Gemini API key |
+| `GEMINI_API_URL` | No | Gemini `generateContent` endpoint template; include `{model}` |
+| `GEMINI_MODEL` | No | Gemini vision model name |
 
-Never put `VISION_API_KEY`, `DATABASE_URL`, or `JWT_SECRET` in the frontend.
+Never put `GEMINI_API_KEY`, `DATABASE_URL`, or `JWT_SECRET` in the frontend.
 
 If the API is not running on port `4000`, optionally create
 `client\.env.local`:
@@ -499,9 +499,9 @@ confirm them before submitting the existing return form.
 Configure the provider only on the backend:
 
 ```env
-VISION_API_KEY=your-server-side-key
-VISION_API_URL=https://api.openai.com/v1/chat/completions
-VISION_MODEL=gpt-4o-mini
+GEMINI_API_KEY=your-server-side-gemini-key
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+GEMINI_MODEL=gemini-2.0-flash
 ```
 
 Provider errors, malformed JSON, unsupported files, unreadable images, invalid

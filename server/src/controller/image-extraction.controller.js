@@ -14,9 +14,9 @@ const upload = multer({
 });
 
 const visionClient = createVisionClient({
-  apiKey: env.VISION_API_KEY,
-  apiUrl: env.VISION_API_URL,
-  model: env.VISION_MODEL,
+  apiKey: env.GEMINI_API_KEY,
+  apiUrl: env.GEMINI_API_URL,
+  model: env.GEMINI_MODEL,
 });
 
 function uploadImage(request, response, next) {

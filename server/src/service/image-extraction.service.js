@@ -62,44 +62,39 @@ function createVisionClient({ apiKey, apiUrl, model, fetchImpl = fetch }) {
   return {
     async extract(buffer, mimeType) {
       if (!apiKey) throw new ImageExtractionError(503, "Image extraction is not configured");
-      const response = await fetchImpl(apiUrl, {
+      const endpoint = apiUrl.replace("{model}", encodeURIComponent(model));
+      const separator = endpoint.includes("?") ? "&" : "?";
+      const response = await fetchImpl(`${endpoint}${separator}key=${encodeURIComponent(apiKey)}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model,
-          temperature: 0,
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "weight_purity_reading",
-              strict: true,
-              schema: {
-                type: "object",
-                additionalProperties: false,
-                properties: {
-                  grossWeight: { type: "string" },
-                  purity: { type: "string" },
-                  unit: { type: "string" },
-                  visibleReading: { type: "string" },
-                  confidence: { type: "number" },
-                  uncertainty: { type: ["string", "null"] },
-                },
-                required: ["grossWeight", "purity", "unit", "visibleReading", "confidence", "uncertainty"],
+          generationConfig: {
+            temperature: 0,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                grossWeight: { type: "STRING" },
+                purity: { type: "STRING" },
+                unit: { type: "STRING" },
+                visibleReading: { type: "STRING" },
+                confidence: { type: "NUMBER" },
+                uncertainty: { type: "STRING", nullable: true },
               },
+              required: ["grossWeight", "purity", "unit", "visibleReading", "confidence", "uncertainty"],
             },
           },
-          messages: [{
-            role: "user",
-            content: [
-              { type: "text", text: "Read the visible weighing-scale gross weight and purity from this image. Return only the requested JSON. Do not infer fine gold, do not calculate anything, and report ambiguity in uncertainty." },
-              { type: "image_url", image_url: { url: `data:${mimeType};base64,${buffer.toString("base64")}` } },
+          contents: [{
+            parts: [
+              { text: "Read the visible weighing-scale gross weight and purity from this image. Return only the requested JSON. Do not infer fine gold, do not calculate anything, and report ambiguity in uncertainty." },
+              { inlineData: { mimeType, data: buffer.toString("base64") } },
             ],
           }],
         }),
       });
       if (!response.ok) throw new ImageExtractionError(502, "Vision provider could not read the image");
       const body = await response.json();
-      return extractJson(body.choices?.[0]?.message?.content);
+      return extractJson(body.candidates?.[0]?.content?.parts?.[0]?.text);
     },
   };
 }

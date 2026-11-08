@@ -3,6 +3,7 @@ const { describe, it } = require("node:test");
 
 const {
   ImageExtractionError,
+  createVisionClient,
   extractImageReading,
 } = require("../src/service/image-extraction.service");
 
@@ -17,6 +18,45 @@ function extract(response, mimetype = "image/png") {
 }
 
 describe("image extraction service", () => {
+  it("uses the Gemini generateContent contract", async () => {
+    let request;
+    const client = createVisionClient({
+      apiKey: "test-gemini-key",
+      apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+      model: "gemini-2.0-flash",
+      fetchImpl: async (url, options) => {
+        request = { url, options };
+        return {
+          ok: true,
+          json: async () => ({
+            candidates: [{
+              content: {
+                parts: [{
+                  text: JSON.stringify({
+                    grossWeight: "12.345",
+                    purity: "91.60",
+                    unit: "g",
+                    visibleReading: "12.345 g / 91.60",
+                    confidence: 0.94,
+                    uncertainty: null,
+                  }),
+                }],
+              },
+            }],
+          }),
+        };
+      },
+    });
+
+    const reading = await client.extract(png, "image/png");
+    const body = JSON.parse(request.options.body);
+    assert.equal(reading.grossWeight, "12.345");
+    assert.equal(request.url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test-gemini-key");
+    assert.equal(body.contents[0].parts[1].inlineData.mimeType, "image/png");
+    assert.equal(body.generationConfig.responseMimeType, "application/json");
+    assert.equal(request.options.headers.Authorization, undefined);
+  });
+
   it("validates a structured AI reading", async () => {
     const reading = await extract({
       grossWeight: "12.345",
