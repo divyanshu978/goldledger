@@ -11,7 +11,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   GEMINI_API_URL: z.string().url().default("https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"),
-  GEMINI_MODEL: z.string().min(1).default("gemini-2.0-flash"),
+  GEMINI_MODEL: z.string().min(1).default("gemini-3.1-flash-lite"),
 });
 
 const result = envSchema.safeParse(process.env);

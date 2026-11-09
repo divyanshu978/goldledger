@@ -23,7 +23,7 @@ describe("image extraction service", () => {
     const client = createVisionClient({
       apiKey: "test-gemini-key",
       apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-      model: "gemini-2.0-flash",
+      model: "gemini-3.1-flash-lite",
       fetchImpl: async (url, options) => {
         request = { url, options };
         return {
@@ -51,10 +51,10 @@ describe("image extraction service", () => {
     const reading = await client.extract(png, "image/png");
     const body = JSON.parse(request.options.body);
     assert.equal(reading.grossWeight, "12.345");
-    assert.equal(request.url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test-gemini-key");
+    assert.equal(request.url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent");
     assert.equal(body.contents[0].parts[1].inlineData.mimeType, "image/png");
     assert.equal(body.generationConfig.responseMimeType, "application/json");
-    assert.equal(request.options.headers.Authorization, undefined);
+    assert.equal(request.options.headers["x-goog-api-key"], "test-gemini-key");
   });
 
   it("validates a structured AI reading", async () => {
@@ -111,6 +111,32 @@ describe("image extraction service", () => {
       confidence: 0.5,
       uncertainty: "Unclear purity",
     }), /purity outside/);
+  });
+
+  it("normalizes numeric and percent-formatted AI readings", async () => {
+    const reading = await extract({
+      grossWeight: 12.345,
+      purity: "91.60%",
+      unit: "g",
+      visibleReading: "12.345 g / 91.60%",
+      confidence: 0.9,
+      uncertainty: null,
+    });
+    assert.equal(reading.grossWeight, "12.345");
+    assert.equal(reading.purity, "91.60");
+  });
+
+  it("normalizes labeled readings returned by vision providers", async () => {
+    const reading = await extract({
+      grossWeight: "Weight: 12.345 g",
+      purity: "Purity: 91.60%",
+      unit: "g",
+      visibleReading: "12.345 g / 91.60%",
+      confidence: 0.9,
+      uncertainty: null,
+    });
+    assert.equal(reading.grossWeight, "12.345");
+    assert.equal(reading.purity, "91.60");
   });
 
   it("returns a provider failure as a controlled error", async () => {

@@ -18,11 +18,19 @@ function detectImageType(buffer) {
 }
 
 function parseDecimal(value, field) {
-  if (typeof value !== "string" || value.trim() === "") {
+  if (
+    (typeof value !== "string" && typeof value !== "number") ||
+    (typeof value === "number" && !Number.isFinite(value))
+  ) {
     throw new ImageExtractionError(422, `AI returned an invalid ${field}`);
   }
   try {
-    return new Prisma.Decimal(value.trim());
+    const text = String(value).trim();
+    const match = text.match(/^(?:gross\s*weight|weight|purity)?\s*[:=]?\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(?:g|grams?|%)?$/i);
+    if (!match) {
+      throw new Error("empty decimal");
+    }
+    return new Prisma.Decimal(match[1]);
   } catch {
     throw new ImageExtractionError(422, `AI returned an invalid ${field}`);
   }
@@ -32,6 +40,13 @@ function validateExtraction(raw) {
   if (!raw || typeof raw !== "object") {
     throw new ImageExtractionError(422, "The image reading was not structured JSON");
   }
+  console.log("Gemini extraction fields:", {
+    grossWeight: { type: typeof raw.grossWeight, value: raw.grossWeight },
+    purity: { type: typeof raw.purity, value: raw.purity },
+    unit: { type: typeof raw.unit, value: raw.unit },
+    confidence: { type: typeof raw.confidence, value: raw.confidence },
+    uncertainty: { type: typeof raw.uncertainty, value: raw.uncertainty },
+  });
   const grossWeight = parseDecimal(raw.grossWeight, "gross weight");
   const purity = parseDecimal(raw.purity, "purity");
   if (!grossWeight.gt(0)) throw new ImageExtractionError(422, "AI returned a non-positive gross weight");
@@ -58,15 +73,27 @@ function extractJson(content) {
   }
 }
 
+async function getProviderError(response) {
+  try {
+    const body = await response.json();
+    const message = body.error?.message;
+    return typeof message === "string" ? message : null;
+  } catch {
+    return null;
+  }
+}
+
 function createVisionClient({ apiKey, apiUrl, model, fetchImpl = fetch }) {
   return {
     async extract(buffer, mimeType) {
       if (!apiKey) throw new ImageExtractionError(503, "Image extraction is not configured");
       const endpoint = apiUrl.replace("{model}", encodeURIComponent(model));
-      const separator = endpoint.includes("?") ? "&" : "?";
-      const response = await fetchImpl(`${endpoint}${separator}key=${encodeURIComponent(apiKey)}`, {
+      const request = {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify({
           generationConfig: {
             temperature: 0,
@@ -91,8 +118,29 @@ function createVisionClient({ apiKey, apiUrl, model, fetchImpl = fetch }) {
             ],
           }],
         }),
-      });
-      if (!response.ok) throw new ImageExtractionError(502, "Vision provider could not read the image");
+      };
+      let response = await fetchImpl(endpoint, request);
+      if (response.status === 429 || response.status === 503) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        response = await fetchImpl(endpoint, request);
+      }
+      if (!response.ok) {
+        const providerMessage = await getProviderError(response);
+        if (response.status === 401 || response.status === 403) {
+          throw new ImageExtractionError(502, "Gemini API key is invalid or does not have access to the configured model");
+        }
+        if (response.status === 404) {
+          throw new ImageExtractionError(502, `Gemini model "${model}" is unavailable`);
+        }
+        if (response.status === 429) {
+          throw new ImageExtractionError(502, "Gemini API quota or rate limit was exceeded");
+        }
+        if (response.status === 503) {
+          throw new ImageExtractionError(502, "Gemini is temporarily busy; please try again");
+        }
+        console.error("Gemini image extraction failed:", response.status, providerMessage ?? "unknown provider error");
+        throw new ImageExtractionError(502, "Gemini could not read the image");
+      }
       const body = await response.json();
       return extractJson(body.candidates?.[0]?.content?.parts?.[0]?.text);
     },
